@@ -31,6 +31,7 @@ func TestNativeBuffer(t *testing.T) {
 	buffer[1023] = 30
 	t.Log(buffer[1023])
 	t.Log("ptr:", buffer.Ptr())
+	t.Log("string:", buffer.String())
 	NativeFreeBuffer(buffer)
 	t.Log(buffer[1023])
 }

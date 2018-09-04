@@ -37,6 +37,14 @@ func (this *NativeBuffer) Ptr() uintptr {
 	return ptrH.Data
 }
 
+func (this *NativeBuffer) String() string {
+	strH := &reflect.StringHeader{
+		Data: this.Ptr(),
+		Len:  len(*this),
+	}
+	return *(*string)(unsafe.Pointer(strH))
+}
+
 func NativeAllocateBuffer(size int) NativeBuffer {
 	buffer := NativeBuffer{}
 	addr := C.malloc(C.size_t(size))
