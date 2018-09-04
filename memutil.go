@@ -37,12 +37,28 @@ func (this *NativeBuffer) Ptr() uintptr {
 	return ptrH.Data
 }
 
+func (this *NativeBuffer) Len() int {
+	return len(*this)
+}
+
 func (this *NativeBuffer) String() string {
 	strH := &reflect.StringHeader{
 		Data: this.Ptr(),
 		Len:  len(*this),
 	}
 	return *(*string)(unsafe.Pointer(strH))
+}
+
+func (this *NativeBuffer) Write(data []byte) int {
+	written := 0
+	for i := range data {
+		if i >= len(*this) {
+			break
+		}
+		(*this)[i] = data[i]
+		written++
+	}
+	return written
 }
 
 func NativeAllocateBuffer(size int) NativeBuffer {
