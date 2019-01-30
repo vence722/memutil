@@ -7,16 +7,24 @@ package memutil
 import "C"
 
 import (
+	"github.com/pkg/errors"
 	"reflect"
 	"unsafe"
 )
 
-func NativeNew(proto interface{}) interface{} {
-	p := C.malloc(C.size_t(reflect.TypeOf(proto).Size()))
-	if p == nil {
-		panic("failed to call C.malloc()")
+func NativeNew(ptr interface{}) error {
+	ppType := reflect.TypeOf(ptr)
+	pType := ppType.Elem()
+	sType := pType.Elem()
+	if ppType.Kind() != reflect.Ptr || pType.Kind() != reflect.Ptr {
+		return errors.New("input parameter should be a pointer to pointer")
 	}
-	return reflect.NewAt(reflect.TypeOf(proto), p).Interface()
+	p := C.malloc(C.size_t(sType.Size()))
+	if p == nil {
+		return errors.New("failed to call C.malloc()")
+	}
+	reflect.ValueOf(ptr).Elem().Set(reflect.NewAt(sType, p))
+	return nil
 }
 
 func NativeDelete(ptr interface{}) {
@@ -61,11 +69,14 @@ func (this *NativeBuffer) Write(data []byte) int {
 	return written
 }
 
-func NativeAllocateBuffer(size int) NativeBuffer {
+func NativeAllocateBuffer(size int) (NativeBuffer, error) {
 	buffer := NativeBuffer{}
 	addr := C.malloc(C.size_t(size))
+	if addr == nil {
+		return nil, errors.New("failed to call C.malloc()")
+	}
 	buffer.init(addr, size)
-	return buffer
+	return buffer, nil
 }
 
 func NativeFreeBuffer(buffer NativeBuffer) {

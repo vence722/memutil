@@ -9,16 +9,18 @@ type TestType struct {
 	TestString string
 }
 
-var TestTypeProto TestType
-
 func TestNativeNewAndDelete(t *testing.T) {
 	var list []*TestType
 	for i := 0; i < 100; i++ {
-		testType := NativeNew(TestTypeProto).(*TestType)
-		testType.TestField = 3
-		testType.TestString = "sdfsdf"
-		t.Log(testType.TestField, testType.TestString)
-		list = append(list, testType)
+		var test *TestType
+		err := NativeNew(&test)
+		if err != nil {
+			t.Error(err)
+		}
+		test.TestField = 3
+		test.TestString = "sdfsdf"
+		t.Log(test.TestField, test.TestString)
+		list = append(list, test)
 	}
 	for i := 0; i < 100; i++ {
 		NativeDelete(list[i])
@@ -26,7 +28,10 @@ func TestNativeNewAndDelete(t *testing.T) {
 }
 
 func TestNativeBuffer(t *testing.T) {
-	buffer := NativeAllocateBuffer(1024)
+	buffer, err := NativeAllocateBuffer(1024)
+	if err != nil {
+		t.Error(err)
+	}
 	t.Log(len(buffer))
 	buffer[1023] = 30
 	t.Log(buffer[1023])
