@@ -1,30 +1,46 @@
 package memutil
 
 import (
+	"fmt"
+	"os/exec"
 	"testing"
 )
 
 type TestType struct {
-	TestField  int
+	TestInt  int
 	TestString string
+}
+
+func printMemUsage() {
+	cmd := exec.Command("tasklist", "/FI", "MEMUSAGE gt 200000")
+	output, _ := cmd.Output()
+	fmt.Println(string(output))
 }
 
 func TestNativeNewAndDelete(t *testing.T) {
 	var list []*TestType
-	for i := 0; i < 100; i++ {
+
+	// Allocate a bunch of TestType struct instances
+	for i := 0; i < 1000000; i++ {
 		var test *TestType
 		err := NativeNew(&test)
 		if err != nil {
 			t.Error(err)
 		}
-		test.TestField = 3
-		test.TestString = "sdfsdf"
-		t.Log(test.TestField, test.TestString)
+		test.TestInt = 722
+		test.TestString = "Vence is smart!"
 		list = append(list, test)
 	}
-	for i := 0; i < 100; i++ {
-		NativeDelete(list[i])
+
+	fmt.Println("After allocate native memory:")
+	printMemUsage()
+
+	for i := 0; i < 1000000; i++ {
+		NativeDelete(&list[i])
 	}
+
+	fmt.Println("After release allocated native memory:")
+	printMemUsage()
 }
 
 func TestNativeBuffer(t *testing.T) {

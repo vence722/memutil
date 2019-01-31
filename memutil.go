@@ -33,7 +33,7 @@ import (
  *     memutil.NativeDelete(&m) // destroy the struct after using it
  */
 func NativeNew(ptr interface{}) error {
-	ppType := reflect.TypeOf(ptr)
+	ppType := reflect.ValueOf(ptr).Type()
 	pType := ppType.Elem()
 	sType := pType.Elem()
 	if ppType.Kind() != reflect.Ptr || pType.Kind() != reflect.Ptr {
@@ -52,7 +52,9 @@ func NativeNew(ptr interface{}) error {
  * Input parameter `ptr` must be a REFERENCE to a valid pointer which can be point to nil.
  */
 func NativeDelete(ptr interface{}) {
-	C.free(unsafe.Pointer(reflect.ValueOf(ptr).Pointer()))
+	ppVal := reflect.ValueOf(ptr)
+	pVal := ppVal.Elem()
+	C.free(unsafe.Pointer(pVal.Pointer()))
 }
 
 type NativeBuffer []byte
