@@ -1,6 +1,6 @@
-// memutil v0.1
+// memutil v0.2
 // @description A util library for allocating native memory
-// @authors     Vence Lin(vence722@gmail.com)
+// @authors     Vence Lam(vence722@gmail.com)
 package memutil
 
 //#include<stdlib.h>
@@ -12,6 +12,26 @@ import (
 	"unsafe"
 )
 
+/**
+ * Allocate native memory for a specific size which is derived by the pointer parameter.
+ * Input parameter `ptr` must be a REFERENCE to a valid pointer which can be point to nil.
+ * The input pointer will point to a valid object which is located OUTSIDE Golang heap.
+ * When finish using this pointer, you MUST call memutil.NativeDelete() function to
+ * release the memory manually.
+ *
+ * Example usage:
+ *     type MyStruct struct {
+ *         name string
+ *     }
+ *
+ *     var m *MyStruct // declare an empty pointer
+ *     memutil.NativeNew(&m) // should pass the REFERENCE of the pointer
+ *     m.name = "Vence" // do something with m as usual
+ *
+ *     ......
+ *
+ *     memutil.NativeDelete(&m) // destroy the struct after using it
+ */
 func NativeNew(ptr interface{}) error {
 	ppType := reflect.TypeOf(ptr)
 	pType := ppType.Elem()
@@ -27,6 +47,10 @@ func NativeNew(ptr interface{}) error {
 	return nil
 }
 
+/**
+ * Release the memory which allocated by the memutil.NativeNew() function.
+ * Input parameter `ptr` must be a REFERENCE to a valid pointer which can be point to nil.
+ */
 func NativeDelete(ptr interface{}) {
 	C.free(unsafe.Pointer(reflect.ValueOf(ptr).Pointer()))
 }
