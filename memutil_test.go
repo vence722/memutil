@@ -11,6 +11,11 @@ type TestType struct {
 	TestString string
 }
 
+type TestTypeSimple struct {
+	TestByte byte
+	TestInt int
+}
+
 func printMemUsage() {
 	cmd := exec.Command("tasklist", "/FI", "MEMUSAGE gt 200000")
 	output, _ := cmd.Output()
@@ -55,4 +60,13 @@ func TestNativeBuffer(t *testing.T) {
 	t.Log("string:", buffer.String())
 	NativeFreeBuffer(buffer)
 	t.Log(buffer[1023])
+}
+
+func TestPrintPtrMemory(t *testing.T) {
+	a := &TestTypeSimple{
+		TestByte: 200,
+		TestInt: 10000,
+	}
+	mem := PrintPtrMemory(a)
+	t.Log("mem", fmt.Sprintf("%v", mem))
 }

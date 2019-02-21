@@ -1,4 +1,4 @@
-// memutil v0.2
+// memutil v0.3
 // @description A util library for allocating native memory
 // @authors     Vence Lam(vence722@gmail.com)
 package memutil
@@ -107,4 +107,43 @@ func NativeAllocateBuffer(size int) (NativeBuffer, error) {
 
 func NativeFreeBuffer(buffer NativeBuffer) {
 	C.free(unsafe.Pointer(buffer.Ptr()))
+}
+
+func ShallowCopyDataFromPointer(src interface{}) interface{} {
+	tSrc := reflect.TypeOf(src)
+	if tSrc.Kind() != reflect.Ptr {
+		panic("src must be a pointer")
+	}
+	pSrc := reflect.ValueOf(src).Pointer()
+
+	dst := reflect.New(tSrc.Elem())
+	pDst := dst.Pointer()
+
+	var i uintptr
+	size := tSrc.Elem().Size()
+	for ; i < size; i++ {
+		*(*byte)(unsafe.Pointer(pDst + i)) = *(*byte)(unsafe.Pointer(pSrc + i))
+	}
+
+	return dst.Interface()
+}
+
+func PrintPtrMemory(ptr interface{}) []byte {
+	pType := reflect.TypeOf(ptr)
+	if pType.Kind() != reflect.Ptr {
+		panic("src must be a pointer")
+	}
+	sType := pType.Elem()
+	sTypeLen := sType.Size()
+
+	pVal := reflect.ValueOf(ptr)
+	ptrVal := pVal.Pointer()
+
+	memoryData := make([]byte, sTypeLen)
+	var i uintptr = 0
+	for ; i < sTypeLen; i++ {
+		memoryData[i] = *(*byte)(unsafe.Pointer(ptrVal + i))
+	}
+
+	return memoryData
 }
