@@ -7,7 +7,7 @@ package memutil
 import "C"
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 	"reflect"
 	"unsafe"
 )
